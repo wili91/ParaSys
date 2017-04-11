@@ -1,11 +1,18 @@
 package excercise1;
 
 import java.util.Random;
+//import java.util.concurrent.Executor;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ExecutorService;
+
 
 public class Main {
 
 	private static IceCafe myIceCafe;
 	private static int CustomerCtr = 0;
+	
+	//this is the new  thread pool
+	private static ExecutorService pool = Executors.newCachedThreadPool();
 
 	public static void main(String[] args) {
 
@@ -23,7 +30,9 @@ public class Main {
 		// 10 groups every 10 minutes with 3 up to 6 group members 
 		shiftGenerator(10, 10, 3 , 6); 
 		System.out.println("################################Work some more hours to serve everyone!####################################################");
-
+		
+		//stop all other Threads
+		pool.shutdown();
 	}
 
 	private static void shiftGenerator(int numberOfGroups, int groupIntervallMinutes, int groupMinSize,
@@ -44,8 +53,11 @@ public class Main {
 					
 
 					for (int j = 0; j < groupSize; j++) {
-						Thread customer = new Thread(new Customer(CustomerCtr + " Id ", myIceCafe));
-						customer.start();
+//						Thread customer = new Thread(new Customer(CustomerCtr + " Id ", myIceCafe));
+//						customer.start();
+						
+						
+						pool.execute(new Customer(CustomerCtr + " Id ", myIceCafe));
 						CustomerCtr++;
 					}
 				}
@@ -61,6 +73,7 @@ public class Main {
 			//make sure Minute Counter is correct
 			timeInMinutes++;
 		}
+	
 	}
 
 }
