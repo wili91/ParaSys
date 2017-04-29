@@ -1,14 +1,18 @@
 package excercise1;
 
 import java.util.Random;
+import java.util.concurrent.Semaphore;
 import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.ReentrantLock;
 
 public class IceCafe {
 
-	// Define Locks
-	private final ReentrantLock lock = new ReentrantLock();
-	private final Condition condition = lock.newCondition();
+	// // Define Locks
+	// private final ReentrantLock lock = new ReentrantLock();
+	// private final Condition condition = lock.newCondition();
+
+	// SEMAPHORE
+	private final Semaphore sem = new Semaphore(3);
 
 	// Default Counter for the number of free Employees
 	private int employeeFreeCtr = 3;
@@ -30,23 +34,17 @@ public class IceCafe {
 	 * Make sure only three employees may be served at a time.
 	 * 
 	 * @param customer
+	 * @throws InterruptedException
 	 */
 	public void isEntering(Customer customer) {
 		System.out.println("Customer " + customer.getName() + " is entering the ice cafe. ");
 
-		lock.lock();
 		try {
-			while (employeeFreeCtr == 0) {
-				try {
-					System.out.println("Customer " + customer.getName() + " Is waiting to be served!");
-					condition.await();
-				} catch (InterruptedException e) {
-					e.printStackTrace();
-				}
-			}
+			sem.acquire();
 			employeeFreeCtr--;
-		} finally {
-			lock.unlock();
+
+		} catch (InterruptedException e) {
+			e.printStackTrace();
 		}
 
 	}
@@ -62,15 +60,12 @@ public class IceCafe {
 	}
 
 	public void isLeaving(Customer customer) {
-		lock.lock();
 
-		try {
-			System.out.println("Customer " + customer.getName() + " is leaving!");
-			this.employeeFreeCtr++;
-			condition.signal();
-		} finally {
-			lock.unlock();
-		}
+		System.out.println("Customer " + customer.getName() + " is leaving!");
+		this.employeeFreeCtr++;
+
+		sem.release();
+
 	}
 
 }
